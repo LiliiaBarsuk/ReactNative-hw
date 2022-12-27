@@ -1,62 +1,65 @@
-import { ImageBackground, TouchableWithoutFeedback, KeyboardAvoidingView, View, Keyboard, Platform, StyleSheet } from 'react-native';
-import RegistrationScreen from './Screens/RegistrationScreen';
+import 'react-native-gesture-handler';
 import React, { useState, useCallback } from 'react';
-import { useFonts } from 'expo-font';
-import * as SplashScreen from 'expo-splash-screen';
-import LoginScreen from './Screens/LoginScreen';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
+import LoginScreen from './Screens/auth/LoginScreen';
+import RegistrationScreen from './Screens/auth/RegistrationScreen';
 
+import * as Font from 'expo-font';
+import AppLoading from 'expo-app-loading';
 
-SplashScreen.preventAutoHideAsync();
-
-export default function App() {
-  const [fontsLoaded] = useFonts({
-    "Roboto-Regular": require("./assets/fonts/Roboto-Regular.ttf"),
+const loadFonts = async () => {
+  await Font.loadAsync({
+    "Roboto-Regular": require("./assets/fonts/Roboto-Regular.ttf"),    
     "Roboto-Bold": require("./assets/fonts/Roboto-Bold.ttf"),
-    "Roboto-Medium": require("./assets/fonts/Roboto-Medium.ttf"),
   });
-  const [isShowKeyboard, setIsShowKeyboard] = useState(false);
-  function focusInput() {
-    setIsShowKeyboard(true);
+};
+
+import HomeRouter from './HomeRouter';
+
+const AuthStack = createStackNavigator(); 
+const MainTabs = createBottomTabNavigator(); 
+
+const useRoute = (isAuth) => {
+  if (!isAuth) {
+    return (      
+      <>
+        <AuthStack.Screen name="Login" component={LoginScreen} options={{headerShown: false}} />
+        <AuthStack.Screen name="Registration" component={RegistrationScreen} options={{headerShown: false}} />
+      </> 
+    );
   }
-
-  function hideKeaboard() {
-    setIsShowKeyboard(false);
-    Keyboard.dismiss();
-  }
-
-  const onLayoutRootView = useCallback(async () => {
-    if (fontsLoaded) {
-      await SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded]);
-
-  if (!fontsLoaded) {
-    return null;
-  }
-
-  return (
-        <TouchableWithoutFeedback onPress={hideKeaboard}>
-        <View style={styles.container}>
-        
-        <ImageBackground source={require('./assets/img/PhotoBG.jpg')} style={styles.image}>
-        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : ""} >
-        <RegistrationScreen onInputFocus={focusInput} hideKeaboard={hideKeaboard} isShowKeyboard={isShowKeyboard}></RegistrationScreen>    
-        </KeyboardAvoidingView>
-        </ImageBackground>
-      </View>
-      </TouchableWithoutFeedback>
-   
+  
+  return (    
+      <MainTabs.Screen name="Home" component={HomeRouter} options={{ headerShown: false }} />    
   );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff'
-      },
-      image: {
-        flex: 1,
-        resizeMode: "cover",
-        justifyContent: "flex-end",   
-      },
-})
+
+export default function App() {
+  const [isReady, setIsReady] = useState(false);
+  const [isAuth, setIsAuth] = useState(true);
+
+  const routing = useRoute(isAuth);
+
+  if (!isReady) {
+    return (<AppLoading
+      startAsync={loadFonts}
+      onFinish={() => setIsReady(true)}
+      onError={err => console.log(err)} />);
+  }
+  
+  return (
+    <NavigationContainer>
+
+      <AuthStack.Navigator initialRouteName={isAuth ? "Home" : "Login"}>
+
+        {routing}       
+
+      </AuthStack.Navigator>
+
+    </NavigationContainer>    
+  );
+}
+

@@ -3,8 +3,8 @@ import React, { useState, useCallback } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import LoginScreen from './Screens/auth/LoginScreen';
-import RegistrationScreen from './Screens/auth/RegistrationScreen';
+import LoginScreen from './src/Screens/auth/LoginScreen';
+import RegistrationScreen from './src/Screens/auth/RegistrationScreen';
 
 import * as Font from 'expo-font';
 import AppLoading from 'expo-app-loading';
@@ -16,7 +16,7 @@ const loadFonts = async () => {
   });
 };
 
-import HomeRouter from './HomeRouter';
+import HomeRouter from './src/routers/HomeRouter';
 
 const AuthStack = createStackNavigator(); 
 const MainTabs = createBottomTabNavigator(); 

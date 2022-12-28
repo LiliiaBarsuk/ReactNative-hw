@@ -34,7 +34,7 @@ export default function LoginScreen({ navigation }) {
       <TouchableWithoutFeedback onPress={hideKeaboard}>
         <View style={styles.container}>
         
-        <ImageBackground source={require('../../assets/img/PhotoBG.jpg')} style={styles.image}>
+        <ImageBackground source={require('../../../assets/img/PhotoBG.jpg')} style={styles.image}>
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : ""} >
         <View style={{...styles.formContainer, paddingBottom: isShowKeyboard ? 32 : 111}}>
                 <Text  style={styles.title}>Log in</Text>

@@ -2,9 +2,9 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, TouchableOpacity } from 'react-native';
 
-import PostsScreen from './Screens/user/PostsScren';
-import ProfileScreen from './Screens/user/Profile';
-import CreatePostsScreen from './Screens/user/CreatePostsScreen';
+import PostsScreen from '../Screens/user/PostsScren';
+import ProfileScreen from '../Screens/user/Profile';
+import CreatePostsScreen from '../Screens/user/CreatePostsScreen';
 
 import { AntDesign, Octicons, MaterialIcons, Ionicons } from '@expo/vector-icons';
 
@@ -37,14 +37,13 @@ export default function HomeRouter({ navigation }) {
       tabBarIcon: ({focused, size, color}) => <AntDesign name="plus" size={24} color="#212121CC" />,
       headerLeft: () => (
           <TouchableOpacity activeOpacity={0.6}
-              style={{ marginLeft: 0 }}>
-              <Ionicons name="arrow-back" size={24} color="#212121CC;
-" />
+              style={{ marginLeft: 16 }}>
+              <Ionicons name="arrow-back" size={24} color="#212121CC" />
           </TouchableOpacity>                        
       ),
       headerTitleAlign: "center",
       headerTitle: 'Create post',
-      headerStyle: { borderBottomWidth: 1, borderColor: 'rgba(0, 0, 0, 0.3)' },
+      headerStyle: { borderBottomWidth: 1, borderColor: 'rgba(0, 0, 0, 0.3)', height: 88 },
     }} 
     />
   <MainTab.Screen 

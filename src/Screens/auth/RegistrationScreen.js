@@ -34,12 +34,12 @@ export default function RegistrationScreen({ navigation }) {
         <View style={styles.container}>
 
         
-        <ImageBackground source={require('../../assets/img/PhotoBG.jpg')} style={styles.image}>
+        <ImageBackground source={require('../../../assets/img/PhotoBG.jpg')} style={styles.image}>
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : ""} >
         <View style={{...styles.formContainer, paddingBottom: isShowKeyboard ? 20 : 45}}>
                 <View style={styles.avatar}>
                     <View style={styles.avatarAddBtn}>
-                    <ImageBackground source={require('../../assets/img/add.png')} style={styles.addImage}></ImageBackground>
+                    <ImageBackground source={require('../../../assets/img/add.png')} style={styles.addImage}></ImageBackground>
                     </View>
                 </View>
                 <Text  style={styles.title}>Registration</Text>

@@ -10,7 +10,7 @@ const AuthStack = createStackNavigator();
 const MainTab = createBottomTabNavigator();
 
 export default function AuthRouter() {
-      return <AuthStack.Navigator>
+      return <>
       <AuthStack.Screen 
         options={{headerShown: false}} 
         name='Login' 
@@ -19,7 +19,7 @@ export default function AuthRouter() {
         options={{headerShown: false}}  
         name='Register' 
         component={RegistrationScreen}/>
-    </AuthStack.Navigator>
+    </>
       
   
   }

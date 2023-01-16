@@ -1,44 +1,29 @@
 import React, {useState} from 'react';
 import { StyleSheet, Text, TextInput, View, TouchableOpacity, Platform, KeyboardAvoidingView, TouchableWithoutFeedback } from 'react-native';
-import * as Font from 'expo-font';
-import AppLoading from 'expo-app-loading';
+import MapView, { Marker } from "react-native-maps";
 
+export default function MapScreen() { 
 
-const loadFonts = async () => {
-  await Font.loadAsync({
-    "Roboto-Regular": require("../assets/fonts/Roboto-Regular.ttf"),    
-    "Roboto-Bold": require("../assets/fonts/Roboto-Bold.ttf"),
-  });
-};
-
-export default function MapScreen({onInputFocus, hideKeaboard, isShowKeyboard}) {
-    const [isReady, setIsReady] = useState(false);  
-
-  if (!isReady) {
-    return (<AppLoading
-      startAsync={loadFonts}
-      onFinish={() => setIsReady(true)}
-      onError={err => console.log(err)} />);
-  }
 
     return (
-            <View style={{...styles.formContainer, paddingBottom: isShowKeyboard ? 32 : 111}}>
-                <Text  style={styles.title}>Map screen</Text>
-                <View style={styles.form}>
-                    
-                </View>
+            <View style={styles.container}>
+                <MapView 
+                  style={{flex: 1}} 
+                  initialRegion={{
+                    latitude: '', 
+                    longitude: '', 
+                    latitudeDelta: 0.001, 
+                    longitudeDelta: 0.006}}>
+                      <Marker coordinate={{latitude: '', longitude: ''}}/>
+                </MapView>
             </View>
     );
 }
 
 const styles = StyleSheet.create({
-      formContainer: {
-        paddingTop: 32,
-        paddingLeft: 16,
-        paddingRight: 16,
-        borderTopLeftRadius: 25,
-        borderTopRightRadius: 25,
-        backgroundColor: '#ffffff',
+      container: {
+        flex: 1,
+        justifyContent: 'center'
       },
     title: {
         fontFamily: 'Roboto-Bold',

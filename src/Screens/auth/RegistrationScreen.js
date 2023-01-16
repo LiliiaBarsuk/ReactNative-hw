@@ -7,7 +7,7 @@ const initialState = {
   password: ''
 }
 
-export default function RegistrationScreen({ navigation }) {
+export default function RegistrationScreen({ navigation, setIsAuth }) {
     const [showPassword, setShowPassword] = useState(true);
     const [registerState, setRegisterState] = useState(initialState);  
     const [isShowKeyboard, setIsShowKeyboard] = useState(false);

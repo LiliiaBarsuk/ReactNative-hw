@@ -1,7 +1,9 @@
 import React, {useState} from 'react';
 import { ImageBackground, StyleSheet, Text, TextInput, View, TouchableOpacity, Platform, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { AntDesign, Octicons, MaterialIcons, Ionicons } from '@expo/vector-icons';
 
-export default function ProfileScreen() {
+
+export default function ProfileScreen({ navigation }) {
     return (
         <View style={styles.container}>
 
@@ -9,6 +11,11 @@ export default function ProfileScreen() {
         <ImageBackground source={require('../../../assets/img/PhotoBG.jpg')} style={styles.image}>
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : ""} >
         <View style={styles.formContainer}>
+        <TouchableOpacity activeOpacity={0.6}
+              style={styles.logoutIcon} onPress={() => navigation.navigate('Login')}>
+              
+        <MaterialIcons name="logout" size={24} color="#BDBDBD" />
+          </TouchableOpacity>  
                 <View style={styles.avatar}>
                     <View style={styles.avatarAddBtn}>
                     <ImageBackground source={require('../../../assets/img/add.png')} style={styles.addImage}></ImageBackground>
@@ -27,6 +34,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff'
+  },
+  logoutIcon: {
+    position: 'absolute',
+    top: 22,
+    right: 16,
   },
   image: {
     flex: 1,

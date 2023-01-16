@@ -21,12 +21,13 @@ export default function HomeRouter({ navigation }) {
       tabBarLabel: "",
       headerRight: () => (
           <TouchableOpacity activeOpacity={0.6}
-              style={{ marginRight: 0 }} onPress={() => navigation.navigate('Auth')}>
+              style={{ marginRight: 20 }} onPress={() => navigation.navigate('Auth')}>
               <MaterialIcons name="logout" size={24} color="#BDBDBD" />
           </TouchableOpacity>                        
       ),
       headerTitleAlign: "center",
       headerTitle: 'Posts',
+      headerTitleStyle: { fontFamily: 'Roboto-Medium', fontSize: 17, color: '#212121'},
       headerStyle: { borderBottomWidth: 1, borderColor: 'rgba(0, 0, 0, 0.3)' },
       tabBarIcon: ({focused, size, color}) => <AntDesign name="appstore-o" size={24} color="#212121CC" />
       }} />
@@ -43,20 +44,15 @@ export default function HomeRouter({ navigation }) {
       ),
       headerTitleAlign: "center",
       headerTitle: 'Create post',
-      headerStyle: { borderBottomWidth: 1, borderColor: 'rgba(0, 0, 0, 0.3)', height: 88 },
+      headerTitleStyle: { fontFamily: 'Roboto-Medium', fontSize: 17, color: '#212121'},
+      headerStyle: { borderBottomWidth: 1, borderColor: 'rgba(0, 0, 0, 0.3)' },
     }} 
     />
   <MainTab.Screen 
     name='Profile' 
     component={ProfileScreen}
     options={{
-      headerRight: () => (
-          <TouchableOpacity activeOpacity={0.6}
-              style={{ marginRight: 19 }}>
-              <MaterialIcons name="logout" size={24} color="#BDBDBD" />
-          </TouchableOpacity>                        
-      ),
-      headerTitle: 'Profile',
+      headerShown: false,
       tabBarIcon: ({focused, size, color}) => <Octicons name="person" size={24} color="#212121CC" />
     }} 
      />

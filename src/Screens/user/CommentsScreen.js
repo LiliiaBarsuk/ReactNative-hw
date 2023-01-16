@@ -1,26 +1,8 @@
 import React, {useState} from 'react';
 import { StyleSheet, Text, TextInput, View, TouchableOpacity, Platform, KeyboardAvoidingView, TouchableWithoutFeedback } from 'react-native';
-import * as Font from 'expo-font';
-import AppLoading from 'expo-app-loading';
 
-
-const loadFonts = async () => {
-  await Font.loadAsync({
-    "Roboto-Regular": require("../assets/fonts/Roboto-Regular.ttf"),    
-    "Roboto-Bold": require("../assets/fonts/Roboto-Bold.ttf"),
-  });
-};
-
-export default function ComentsScreen({onInputFocus, hideKeaboard, isShowKeyboard}) {
-    const [isReady, setIsReady] = useState(false);  
-
-  if (!isReady) {
-    return (<AppLoading
-      startAsync={loadFonts}
-      onFinish={() => setIsReady(true)}
-      onError={err => console.log(err)} />);
-  }
-
+export default function CommentsScreen({onInputFocus, hideKeaboard, isShowKeyboard}) {
+   
     return (
             <View style={{...styles.formContainer, paddingBottom: isShowKeyboard ? 32 : 111}}>
                 <Text  style={styles.title}>CommentsScreen</Text>

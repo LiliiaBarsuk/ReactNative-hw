@@ -13,10 +13,12 @@ const loadFonts = async () => {
   await Font.loadAsync({
     "Roboto-Regular": require("./assets/fonts/Roboto-Regular.ttf"),    
     "Roboto-Bold": require("./assets/fonts/Roboto-Bold.ttf"),
+    "Roboto-Medium": require("./assets/fonts/Roboto-Medium.ttf"),
   });
 };
 
 import HomeRouter from './src/routers/HomeRouter';
+import AuthRouter from './src/routers/authRouter';
 
 const AuthStack = createStackNavigator(); 
 const MainTabs = createBottomTabNavigator(); 
@@ -32,7 +34,7 @@ const useRoute = (isAuth) => {
   }
   
   return (    
-      <MainTabs.Screen name="Home" component={HomeRouter} options={{ headerShown: false }} />    
+      <AuthStack.Screen name="Home" component={HomeRouter} options={{ headerShown: false }} />    
   );
 }
 
@@ -42,6 +44,10 @@ export default function App() {
   const [isAuth, setIsAuth] = useState(true);
 
   const routing = useRoute(isAuth);
+
+  function updateIsAuth (value) {
+    setIsAuth(value)
+  }
 
   if (!isReady) {
     return (<AppLoading
@@ -53,7 +59,7 @@ export default function App() {
   return (
     <NavigationContainer>
 
-      <AuthStack.Navigator initialRouteName={isAuth ? "Home" : "Login"}>
+      <AuthStack.Navigator initialRouteName={isAuth ? "Home" : "Login"} >
 
         {routing}       
 

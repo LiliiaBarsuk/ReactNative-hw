@@ -12,8 +12,11 @@ import {
   Image } from 'react-native';
 import { Camera, CameraType } from 'expo-camera';
 import * as MediaLibrary from "expo-media-library";
+import { useIsFocused } from '@react-navigation/native';
+import * as Location from 'expo-location';
 
 import { MaterialIcons, AntDesign } from '@expo/vector-icons'; 
+
 
 const initialState = {
   title: '',
@@ -22,27 +25,14 @@ const initialState = {
 
 export default function CreatePostsScreen({ navigation }) {
   const [isKeabordShown, setIsKeabordShown] = useState(false);
-  const [hasPermission, setHasPermission] = useState(false);
   const [cameraRef, setCameraRef] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [photoUrl, setPhotoUrl] = useState('');
   const [formState, setFormState] = useState(initialState);
-
-  useEffect(() => {
-    (async () => {
-      const { status } = await Camera.requestPermissionsAsync();
-      await MediaLibrary.requestPermissionsAsync();
-
-      setHasPermission(status === "granted");
-    })();
-  }, []);
-
-  if (hasPermission === null) {
-    return <Text>No camera</Text>;
-  }
-  if (hasPermission === false) {
-    return <Text>No access to camera</Text>;
-  }
+  const [coordinates, setCoordinates] = useState(null);
+  const [errorMsg, setErrorMsg] = useState(null);
+  
+  const isFocused = useIsFocused()
 
   function hideKeaboard() {
     setIsKeabordShown(false);
@@ -50,27 +40,60 @@ export default function CreatePostsScreen({ navigation }) {
 }
 
 function onInputFocus() {
-  setIsShowKeyboard(true);
+  setIsKeabordShown(true);
+}
+
+// useEffect(() => {
+    //     (async () => {
+    //     const { status } = await Camera.getCameraPermissionsAsync();
+    //     await MediaLibrary.requestPermissionsAsync();
+
+    //     setHasPermission(status === "granted");
+    //     })();
+    // }, []);
+
+    // if (hasPermission === null) {
+    //     return <View />;
+    // }
+    // if (hasPermission === false) {
+    //     return <Text>No access to camera</Text>;
+    // }
+
+
+async function getlocation() {
+  let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setErrorMsg('Permission to access location was denied');
+        return;
+      }
+  const { coords } = await Location.getCurrentPositionAsync();
+  const coordinates = {
+    latitude: coords.latitude,
+    longitude: coords.longitude,
+  };
+  setCoordinates(coordinates);
 }
 
 async function takePhoto() {
   if (cameraRef) {
     const { uri } = await cameraRef.takePictureAsync();
-    setPhotoUrl(uri)
     await MediaLibrary.createAssetAsync(uri);
+    getlocation()
+    setPhotoUrl(uri);
   }
 }
 
 function sendPhoto() {
+  const postData = {...formState, photoUrl, coordinates}
   setPhotoUrl('');
   setFormState(initialState);
-  navigation.navigate('Posts', { photoUrl });
+  navigation.navigate('DefaultScreen', { postData });
 }
   return (
     <TouchableWithoutFeedback onPress={hideKeaboard}>
       <View style={styles.container}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}>
-      <Camera
+      { isFocused && <Camera
         style={styles.camera}
         type={type}
         ref={(ref) => {
@@ -78,8 +101,8 @@ function sendPhoto() {
         }}
       >
         {photoUrl && <View style={styles.imageContainer}>
-          <Image source={{uri: photoUrl}} style={styles.image}/>
-        </View>}
+            <Image source={{uri: photoUrl}} style={styles.image}/>
+          </View>}
         
         <View style={styles.photoView}>
           <TouchableOpacity
@@ -99,11 +122,12 @@ function sendPhoto() {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.button}
-            onPress={takePhoto}
-          ><MaterialIcons style={styles.buttonIcon} name="photo-camera" size={24} color="white" />
+            onPress={takePhoto}>
+            <MaterialIcons style={styles.buttonIcon} name="photo-camera" size={24} color="white" />
           </TouchableOpacity>
         </View>
-      </Camera>
+      </Camera>  }
+      
 
       <Text style={styles.textUpload} >{photoUrl ? 'Edit photo' : 'Upload photo'}</Text>
 
@@ -116,7 +140,7 @@ function sendPhoto() {
         value={formState.title}
         onChangeText = {(value) => setFormState((prevState) => ({...prevState, title: value}))}
         />
-    
+      
       <TextInput 
         placeholder="Location..." 
         placeholderTextColor="#BDBDBD"

@@ -1,15 +1,32 @@
 import React, {useState, useEffect} from 'react';
-import { StyleSheet, Text, TextInput, View, TouchableOpacity, Platform, KeyboardAvoidingView, TouchableWithoutFeedback } from 'react-native';
+import { 
+  StyleSheet, 
+  Text, 
+  TextInput, 
+  View, 
+  TouchableOpacity,    
+  Keyboard,
+  Platform,
+  KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Image } from 'react-native';
 import { Camera, CameraType } from 'expo-camera';
 import * as MediaLibrary from "expo-media-library";
 
-import { MaterialIcons,Entypo } from '@expo/vector-icons'; 
+import { MaterialIcons, AntDesign } from '@expo/vector-icons'; 
 
+const initialState = {
+  title: '',
+  location: ''
+}
 
-export default function CreatePostsScreen() {
-    const [hasPermission, setHasPermission] = useState(null);
+export default function CreatePostsScreen({ navigation }) {
+  const [isKeabordShown, setIsKeabordShown] = useState(false);
+  const [hasPermission, setHasPermission] = useState(false);
   const [cameraRef, setCameraRef] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
+  const [photoUrl, setPhotoUrl] = useState('');
+  const [formState, setFormState] = useState(initialState);
 
   useEffect(() => {
     (async () => {
@@ -21,13 +38,38 @@ export default function CreatePostsScreen() {
   }, []);
 
   if (hasPermission === null) {
-    return <View />;
+    return <Text>No camera</Text>;
   }
   if (hasPermission === false) {
     return <Text>No access to camera</Text>;
   }
+
+  function hideKeaboard() {
+    setIsKeabordShown(false);
+    Keyboard.dismiss();
+}
+
+function onInputFocus() {
+  setIsShowKeyboard(true);
+}
+
+async function takePhoto() {
+  if (cameraRef) {
+    const { uri } = await cameraRef.takePictureAsync();
+    setPhotoUrl(uri)
+    await MediaLibrary.createAssetAsync(uri);
+  }
+}
+
+function sendPhoto() {
+  setPhotoUrl('');
+  setFormState(initialState);
+  navigation.navigate('Posts', { photoUrl });
+}
   return (
-    <View style={styles.container}>
+    <TouchableWithoutFeedback onPress={hideKeaboard}>
+      <View style={styles.container}>
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <Camera
         style={styles.camera}
         type={type}
@@ -35,6 +77,10 @@ export default function CreatePostsScreen() {
           setCameraRef(ref);
         }}
       >
+        {photoUrl && <View style={styles.imageContainer}>
+          <Image source={{uri: photoUrl}} style={styles.image}/>
+        </View>}
+        
         <View style={styles.photoView}>
           <TouchableOpacity
             style={styles.flipContainer}
@@ -53,26 +99,61 @@ export default function CreatePostsScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.button}
-            onPress={async () => {
-              if (cameraRef) {
-                const { uri } = await cameraRef.takePictureAsync();
-                await MediaLibrary.createAssetAsync(uri);
-              }
-            }}
-          >
-            <View style={styles.takePhotoOut}>
-              <View style={styles.takePhotoInner}></View>
-            </View>
+            onPress={takePhoto}
+          ><MaterialIcons style={styles.buttonIcon} name="photo-camera" size={24} color="white" />
           </TouchableOpacity>
         </View>
       </Camera>
-    </View>
+
+      <Text style={styles.textUpload} >{photoUrl ? 'Edit photo' : 'Upload photo'}</Text>
+
+      <TextInput 
+        placeholder="Title..." 
+        placeholderTextColor="#BDBDBD"
+        textAlign='left' 
+        style={styles.textInput} 
+        onFocus={onInputFocus}
+        value={formState.title}
+        onChangeText = {(value) => setFormState((prevState) => ({...prevState, title: value}))}
+        />
+    
+      <TextInput 
+        placeholder="Location..." 
+        placeholderTextColor="#BDBDBD"
+        textAlign='left' 
+        style={styles.textInput} 
+        onFocus={onInputFocus}
+        value={formState.location}
+        onChangeText = {(value) => setFormState((prevState) => ({...prevState, location: value}))}
+        />
+
+      <TouchableOpacity
+        activeOpacity={0.6}
+        style={{...styles.publishBtn,  backgroundColor: photoUrl ? '#FF6C00' : "transparent"}}
+        // onPress={createAndLoadPostData}
+      >
+        <Text style={{...styles.publishText, color: photoUrl ? '#FFFFFF' : '#BDBDBD'}} onPress={sendPhoto}>PUBLISH</Text>
+      </TouchableOpacity> 
+      <TouchableOpacity style={styles.deleteContainer} >
+      <AntDesign name="delete" size={24} color="#DADADA" style={styles.deleteIcon} />
+      </TouchableOpacity>
+         </KeyboardAvoidingView>
+                
+                </View>
+    
+                
+                
+            </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  camera: { flex: 1 },
+  container: { flex: 1, paddingHorizontal: 16, },
+  camera: { 
+    marginTop: 32,
+    height: '35%',
+    borderRadius: 8 
+  },
   photoView: {
     flex: 1,
     backgroundColor: "transparent",
@@ -80,107 +161,70 @@ const styles = StyleSheet.create({
   },
 
   flipContainer: {
-    flex: 0.1,
     alignSelf: "flex-end",
+    marginRight: 10
   },
 
-  button: { alignSelf: "center" },
+  button: { 
+    alignSelf: "center",
+    marginBottom: 20,
+    width: 60,
+    height: 60,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
 
-  takePhotoOut: {
-    borderWidth: 2,
-    borderColor: "white",
+  },
+  textUpload: {
+    marginTop: 8,
+    fontFamily: 'Roboto-Regular',
+    fontSize: 16,
+    color: '#BDBDBD'
+  },
+  textInput: {
+    fontSize: 16,
+    fontFamily: 'Roboto-Regular',
     height: 50,
-    width: 50,
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 50,
+    borderBottomColor : '#E8E8E8',
+    borderBottomWidth: 1,
+    marginTop: 16,
   },
-
-  takePhotoInner: {
-    borderWidth: 2,
-    borderColor: "white",
+  publishBtn: {
+    marginTop: 32,
+    fontSize: 16,
+    height: 50,
+    borderRadius: 100,
+    justifyContent: 'center',
+  },
+  publishText: {
+    fontFamily: 'Roboto-Regular',
+    alignSelf: 'center',
+  },
+  imageContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    borderColor: '#FFFFFF',
+    borderWidth: 1,
+    borderRadius: 8
+  },
+  image: {
+    height: 100,
+    width: 100,
+    borderRadius: 8
+  },
+  deleteContainer: {
+    marginBottom: 22,
+    width: 70,
     height: 40,
-    width: 40,
-    backgroundColor: "white",
-    borderRadius: 50,
+    borderRadius: 29,
+    alignSelf: 'center',
+    justifyContent: 'flex-end'
   },
+  deleteIcon: {
+    alignSelf: 'center',
+  }
 });
 
 
-{/* <View style={styles.container}>
-                
-<View style={styles.cameraContainer}>
-    <Camera style={styles.camera} type={type} ref={(ref) => {
-setCameraRef(ref);
-}}> */}
-                        {/* <View style={styles.buttonContainer}>
-                        <TouchableOpacity style={styles.button} onPress={async () => {
-              if (cameraRef) {
-                const { uri } = await cameraRef.takePictureAsync();
-                await MediaLibrary.createAssetAsync(uri);
-              }
-            }}>
-                          <MaterialIcons name="photo-camera" size={24} color="grey" />
-                        </TouchableOpacity>
-                        </View>
-                    </Camera>
-                </View>
-                <Text style={styles.text}>Upload photo(Edit photo)</Text>
-                <TextInput 
-                      placeholder="Name..." 
-                      placeholderTextColor="#BDBDBD"
-                      textAlign='left' 
-                      style={styles.textInput} 
-                    //   onFocus={onInputFocus}
-                    //   value={registerState.login}
-                    //   onChangeText = {(value) => setRegisterState((prevState) => ({...prevState, login: value}))}
-                    />
-
-
-            </View>
-    );
-}
-
-const styles = StyleSheet.create({
-      container: {
-        flex: 1,
-        paddingTop: 32,
-        paddingHorizontal: 16,
-        backgroundColor: '#ffffff',
-      },
-    camera: {
-      height: 240,
-      borderRadius: 8,
-      
-    },
-    cameraContainer: {
-        
-    },
-    button: {
-        width: 60,
-        height: 60,
-        borderRadius: 50,
-        backgroundColor: '#FFFFFF4D',
-       alignItems: 'center',
-       justifyContent: 'center',
-       position: 'absolute', 
-       top: 168,
-       left: 132
-    },
-    text: {
-        fontFamily: 'Roboto-Regular',
-        fontSize: 16,
-        color: '#BDBDBD',
-        marginTop: 8,
-    },
-    textInput: {
-       height: 50,
-       marginTop: 16,
-       paddingTop: 16,
-       paddingBottom: 16,
-       color: "#212121"
-    }
-    
-
-}) */}

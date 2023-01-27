@@ -1,8 +1,8 @@
 import React, {useState} from 'react';
-import { StyleSheet, Text, TextInput, View, TouchableOpacity, Platform, KeyboardAvoidingView, TouchableWithoutFeedback } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import MapView, { Marker } from "react-native-maps";
 
-export default function MapScreen() { 
+export default function MapScreen({navigation, route}) { 
 
 
     return (
@@ -10,11 +10,11 @@ export default function MapScreen() {
                 <MapView 
                   style={{flex: 1}} 
                   initialRegion={{
-                    latitude: '', 
-                    longitude: '', 
+                    latitude: route.params.coordinates.latitude, 
+                    longitude: route.params.coordinates.longitude, 
                     latitudeDelta: 0.001, 
                     longitudeDelta: 0.006}}>
-                      <Marker coordinate={{latitude: '', longitude: ''}}/>
+                      <Marker coordinate={{latitude: route.params.coordinates.latitude, longitude: route.params.coordinates.longitude}}/>
                 </MapView>
             </View>
     );

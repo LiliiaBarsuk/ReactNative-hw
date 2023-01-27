@@ -1,149 +1,218 @@
-import React, {useState} from 'react';
-import { ImageBackground, StyleSheet, Text, TextInput, View, TouchableOpacity, Platform, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard } from 'react-native';
-import { AntDesign, Octicons, MaterialIcons, Ionicons } from '@expo/vector-icons';
+import React, { useState, useEffect } from "react";
+import {
+    StyleSheet,
+    Text,
+    View,
+    ImageBackground,
+    TouchableOpacity,
+    FlatList,
+    Image
+} from 'react-native';
+
+import { useSelector, useDispatch } from "react-redux";
+
+import { collection, query, where, getDocs } from "firebase/firestore";
+
+import { MaterialIcons, EvilIcons } from '@expo/vector-icons';
+
+import { signOutUser } from '../../../redux/auth/authOperations';
+import { db } from '../../../firebase/config';
 
 
-export default function ProfileScreen({ navigation }) {
+export default function ProfileScreen() {
+    const [posts, setPosts] = useState([]);
+
+    const dispatch = useDispatch();
+    const { userId, login } = useSelector(state => state.auth);
+
+    useEffect(() => {
+        getUsersPosts();
+
+        
+    }, []);
+
+    const signOut = () => {
+        dispatch(signOutUser());
+    }
+
+    const getUsersPosts = async () => {
+
+        const q = query(collection(db, "posts"), where("userId", "==", userId));
+
+        const querySnapshot = await getDocs(q);
+
+        setPosts(querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })));               
+    }
+
+
+
     return (
         <View style={styles.container}>
 
-        
-        <ImageBackground source={require('../../../assets/img/PhotoBG.jpg')} style={styles.image}>
-        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : ""} >
-        <View style={styles.formContainer}>
-        <TouchableOpacity activeOpacity={0.6}
-              style={styles.logoutIcon} onPress={() => navigation.navigate('Login')}>
+        <ImageBackground source={require('../../../assets/img/PhotoBG.jpg')} style={styles.image}> 
               
-        <MaterialIcons name="logout" size={24} color="#BDBDBD" />
-          </TouchableOpacity>  
+            <View style={styles.profile} >
+
                 <View style={styles.avatar}>
-                    <View style={styles.avatarAddBtn}>
-                    <ImageBackground source={require('../../../assets/img/add.png')} style={styles.addImage}></ImageBackground>
-                    </View>
-                
+                    <TouchableOpacity activeOpacity={0.6} style={styles.avatarBtn}>
+                        <ImageBackground
+                            source={require('../../../assets/img/add.png')}
+                            style={styles.btnimage}>                
+                        </ImageBackground>
+                    </TouchableOpacity>
                 </View>
-            </View>    
-        </KeyboardAvoidingView>
-        </ImageBackground>
+                    
+                    <TouchableOpacity
+                        activeOpacity={0.6}
+                        style={styles.signOut}
+                        onPress={signOut}
+                    >
+                        <MaterialIcons name="logout" size={24} color="#BDBDBD" />
+                    </TouchableOpacity>
+
+                <Text style={styles.login}>{login}</Text>
+
+                <FlatList data={posts} keyExtractor={(item, index) => index.toString()} renderItem={({ item }) => (
+                    <View style={styles.pictureContainer}>
+                        <View style={styles.picture} >
+                            <Image source={{uri: item.photo}} style={{width: '100%', height: 240, borderRadius: 8,}} />
+                        </View>
+
+                        <Text style={styles.title}>{ item.title }</Text>
+
+                        <View style={styles.buttonContainer}>
+                            <TouchableOpacity
+                                activeOpacity={0.6}
+                                style={styles.commentsButton}
+                                onPress={() => navigation.navigate("CommentsScreen", {postId: item.id, photo: item.photo})}
+                            >
+                                <EvilIcons name="comment" size={18} color="#BDBDBD" />
+                                <Text style={styles.commentsText}>0</Text>
+                            </TouchableOpacity>
+                            
+                            <TouchableOpacity
+                                activeOpacity={0.6}
+                                style={styles.mapButton}
+                                onPress={() => navigation.navigate("MapScreen", {location: item.location, title: item.title} )}
+                            >
+                                <EvilIcons name="location" size={18} color="#BDBDBD" />
+                                <Text style={styles.locationText}>{ item.location }</Text>
+                            </TouchableOpacity>
+                        </View>
+                        
+                    </View>
+                )}  />    
+
+            </View>
+                
+          
+        </ImageBackground>      
+        
       </View>
-            
     );
-}
+};
+
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff'
-  },
-  logoutIcon: {
-    position: 'absolute',
-    top: 22,
-    right: 16,
-  },
-  image: {
-    flex: 1,
-    resizeMode: "cover",
-    justifyContent: "flex-end",   
-  },
-    formContainer: {
-      paddingTop: 92,
-      paddingLeft: 16,
-      paddingRight: 16,
-      borderTopLeftRadius: 25,
-      borderTopRightRadius: 25,
-      backgroundColor: '#ffffff',
-
+    container: {
+        flex: 1,
+        backgroundColor: '#ffffff',
     },
+    
+    image: {
+        flex: 1,
+        resizeMode: 'cover',
+        justifyContent: 'flex-end', 
+    },
+
+    profile: {
+        height: '80%',
+        paddingTop: 92,
+        paddingLeft: 16,
+        paddingRight: 16,
+        borderTopLeftRadius: 25,
+        borderTopRightRadius: 25,
+        backgroundColor: '#ffffff',    
+    },
+
     avatar: {
         width: 120,
         height: 120,
-        backgroundColor: "#F6F6F6",
         borderRadius: 16,
+        backgroundColor: '#f6f6f6',
         position: 'absolute',
         top: -60,
         left: "50%",
-        transform: [{ translateX: -50 }],
-      },
-    avatarAddBtn: {
+        transform: [{ translateX: -50 }],    
+        
+    },
+
+    avatarBtn: {    
+        width: 25,
+        height: 25,    
+        borderRadius: 50,
         position: 'absolute',
         top: 81,
         right: -12,
+        
+    },
+
+    btnimage: {
         flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        width: 25,
-        height: 25,
-        backgroundColor: '#FFFFFF',
-        borderColor: "#FF6C00",
-        borderRadius: 50,
-        borderWidth: 1,
+        resizeMode: 'cover',
+        justifyContent: 'center',
+        alignItems: 'center',    
     },
-    addImage: {
-        resizeMode: "cover",    
-        width: 13,
-        height: 13
+
+    signOut: {
+        position: 'absolute',
+        top: 22,
+        right: 16,
     },
-    title: {
-        fontFamily: 'Roboto-Bold',
+
+    login: {
+        fontFamily: 'Roboto-Regular',
         fontSize: 30,
         textAlign: 'center',
-        color: '#212121',
-        marginBottom: 32,  
+        marginBottom: 32,
     },
-    form: {
-        marginHorizontal: 16,
-    },
-    textInput: {
-        backgroundColor: '#F6F6F6',
-        borderWidth: 1,
-        borderColor: '#E8E8E8',
-        borderRadius: 8,
-        height: 50,
-        color: '#212121',
-        padding: 16,
-        fontSize: 16,
-        fontFamily: 'Roboto-Regular',
-        marginBottom: 16,
-    },
-    passwordInput: {
-        backgroundColor: '#F6F6F6',
-        borderWidth: 1,
-        borderColor: '#E8E8E8',
-        borderRadius: 8,
-        height: 50,
-        color: '#212121',
-        padding: 16,
-        fontSize: 16,
-        fontFamily: 'Roboto-Regular',
-        marginBottom: 43,
-    },
-    registerBtn: {
-        height: 51,
-        paddingHorizontal: 32,
-        paddingVertical: 16,
-        backgroundColor: '#FF6C00',
-        borderRadius: 100,
-        marginBottom: 16, 
-    },
-    registerBtnText: {
-      textAlign: "center",
-        color: '#FFFFFF',
-        fontFamily: 'Roboto-Regular',
-        fontSize: 16,
-    },
-    redirectText: {
-      fontSize: 16,
-      fontFamily: 'Roboto-Regular',
-      textAlign: "center",
-      color: '#1B4371',
-    },
-    showPassword: {
-      position: 'absolute',
-      top: 148,
-      right: 32,
-      fontFamily: 'Roboto-Regular',
-      fontSize: 16,
-      color: '#1B4371',
-    }
 
-})
+    pictureContainer: {        
+        marginBottom: 32,
+    },
+
+    picture: {
+        marginBottom: 8,
+    },
+
+    title: {        
+        marginBottom: 8,
+        fontFamily: 'Roboto-Regular',
+        fontSize: 16,
+    },
+    
+    buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+
+    commentsButton: {
+        flexDirection: 'row', 
+        alignItems: 'center'
+    },
+
+    mapButton: {
+        flexDirection: 'row', 
+        alignItems: 'center'       
+    },
+
+    commentsText: {
+        marginLeft: 6,
+    },
+
+    locationText: {
+        marginLeft: 6,
+        marginRight: 16,
+    },
+  
+});

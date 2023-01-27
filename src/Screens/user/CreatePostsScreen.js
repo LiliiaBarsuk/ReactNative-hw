@@ -14,8 +14,12 @@ import { Camera, CameraType } from 'expo-camera';
 import * as MediaLibrary from "expo-media-library";
 import { useIsFocused } from '@react-navigation/native';
 import * as Location from 'expo-location';
+import { db } from '../../../firebase/config';
 
 import { MaterialIcons, AntDesign } from '@expo/vector-icons'; 
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { collection, addDoc } from "firebase/firestore";
+import { useSelector } from 'react-redux';
 
 
 const initialState = {
@@ -33,6 +37,8 @@ export default function CreatePostsScreen({ navigation }) {
   const [errorMsg, setErrorMsg] = useState(null);
   
   const isFocused = useIsFocused()
+
+  const { userId, login } = useSelector(state => state.auth);
 
   function hideKeaboard() {
     setIsKeabordShown(false);
@@ -83,26 +89,62 @@ async function takePhoto() {
   }
 }
 
-function sendPhoto() {
-  const postData = {...formState, photoUrl, coordinates}
+async function uploadPhotoToServer () {
+  const response = await fetch(photoUrl);
+  const file = await response.blob();
+
+const uniquePhotoId = Date.now().toString()
+
+const storage = getStorage();
+const storageRef = ref(storage, `images/${uniquePhotoId}`);
+await uploadBytes(storageRef, file);
+
+const pathReference = ref(storage, `images/${uniquePhotoId}`);
+const url = await getDownloadURL(pathReference);
+
+return url;
+}
+
+async function uploadPostToServer () {
+  const photo = await uploadPhotoToServer();
+        
+        try {
+            const docRef = await addDoc(collection(db, "posts"), {
+                photo,
+                title: formState.title,
+                location: formState.location,
+                coordinates,
+                userId,
+                login
+            });
+            console.log("Document written with ID: ", docRef.id);
+        } catch (e) {
+            console.error("Error adding document: ", e);
+        }
+    }
+
+
+async function sendPhoto() {
+  await uploadPostToServer();
   setPhotoUrl('');
   setFormState(initialState);
-  navigation.navigate('DefaultScreen', { postData });
+  setCoordinates(null);
+  navigation.navigate('DefaultScreen');
 }
+
+
+
   return (
     <TouchableWithoutFeedback onPress={hideKeaboard}>
       <View style={styles.container}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}>
-      { isFocused && <Camera
+      { !photoUrl && <Camera
         style={styles.camera}
         type={type}
         ref={(ref) => {
           setCameraRef(ref);
         }}
       >
-        {photoUrl && <View style={styles.imageContainer}>
-            <Image source={{uri: photoUrl}} style={styles.image}/>
-          </View>}
         
         <View style={styles.photoView}>
           <TouchableOpacity
@@ -127,6 +169,10 @@ function sendPhoto() {
           </TouchableOpacity>
         </View>
       </Camera>  }
+
+      {photoUrl && <View style={styles.imageContainer}>
+            <Image source={{uri: photoUrl}} style={styles.image}/>
+          </View>}
       
 
       <Text style={styles.textUpload} >{photoUrl ? 'Edit photo' : 'Upload photo'}</Text>
@@ -158,7 +204,7 @@ function sendPhoto() {
       >
         <Text style={{...styles.publishText, color: photoUrl ? '#FFFFFF' : '#BDBDBD'}} onPress={sendPhoto}>PUBLISH</Text>
       </TouchableOpacity> 
-      <TouchableOpacity style={styles.deleteContainer} >
+      <TouchableOpacity style={styles.deleteContainer} onPress={() => setPhotoUrl('')}>
       <AntDesign name="delete" size={24} color="#DADADA" style={styles.deleteIcon} />
       </TouchableOpacity>
          </KeyboardAvoidingView>
@@ -226,16 +272,15 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   imageContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
+    marginTop: 32,
+    height: '35%',
     borderColor: '#FFFFFF',
     borderWidth: 1,
     borderRadius: 8
   },
   image: {
-    height: 100,
-    width: 100,
+    width: '100%',
+    height: '100%',
     borderRadius: 8
   },
   deleteContainer: {

@@ -1,5 +1,7 @@
 import React, {useState} from 'react';
 import { ImageBackground, StyleSheet, Text, TextInput, View, TouchableOpacity, Platform, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { signUpUser } from '../../../redux/auth/authOperations';
+import { useDispatch } from 'react-redux';
 
 const initialState = {
   login: '',
@@ -11,6 +13,8 @@ export default function RegistrationScreen({ navigation, setIsAuth }) {
     const [showPassword, setShowPassword] = useState(true);
     const [registerState, setRegisterState] = useState(initialState);  
     const [isShowKeyboard, setIsShowKeyboard] = useState(false);
+
+    const dispatch = useDispatch();
 
   function onInputFocus() {
     setIsShowKeyboard(true);
@@ -24,9 +28,10 @@ export default function RegistrationScreen({ navigation, setIsAuth }) {
 
     function onPressSubmit() {
       hideKeaboard();
-      console.log(registerState);
+      dispatch(signUpUser(registerState))
       setRegisterState(initialState);
-      navigation.navigate("Home");
+      // navigation.navigate("Home");
+
     }
 
     return (

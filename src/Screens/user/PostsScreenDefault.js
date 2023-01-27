@@ -1,21 +1,36 @@
 import React, {useEffect, useState} from 'react';
 import { StyleSheet, Text, Image, View, TouchableOpacity, FlatList, KeyboardAvoidingView, TouchableWithoutFeedback } from 'react-native';
 import { EvilIcons } from '@expo/vector-icons';
+import { useSelector } from "react-redux";
+import { collection, getDocs } from "firebase/firestore"; 
+
+import { db } from '../../../firebase/config';
 
 export default function PostsScreenDefaults({ route, navigation }) {
-    const [posts, setPosts] = useState([]);
-    useEffect(() => {
-        if(route.params?.postData) {
-            setPosts(prevState => [...prevState, route.params.postData]);            
-        }
-    }, [route.params])  
+  const [posts, setPosts] = useState([]);
+
+  const { login, email } = useSelector(state => state.auth)
+
+    
+  useEffect(() => {        
+      getAllPosts();        
+            
+  }, []); 
+  
+  const getAllPosts = async () => {
+      const querySnapshot = await getDocs(collection(db, "posts"));
+
+      if (querySnapshot) {
+          setPosts(querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })));
+      }                
+  }
     return (
             <View style={styles.container}>
                 <View style={styles.userInfoContainer}>
                    <Image style={styles.userAvatar}/> 
                    <View style={styles.userInfo} >
-                        <Text style={styles.userLogin} >Natali Romanova</Text>
-                        <Text style={styles.userEmail} >email@example.com</Text>
+                        <Text style={styles.userLogin} >{login}</Text>
+                        <Text style={styles.userEmail} >{email}</Text>
                     </View>
                 </View>
                     <FlatList 
@@ -24,15 +39,15 @@ export default function PostsScreenDefaults({ route, navigation }) {
                         renderItem={({item}) => (
                             <View style={styles.postContainer}>
                                 <View style={styles.imageContainer}>
-                                    <Image source={{uri: item.photoUrl}} style={styles.image}/>
+                                    <Image source={{uri: item.photo}} style={styles.image}/>
                                 </View>
                                 <Text style={styles.postTitle}>{item.title}</Text>
                                 <View style={styles.postInfo}>
-                                    <TouchableOpacity style={styles.postAddInfo} onPress={() => navigation.navigate("Comments")}>
+                                    <TouchableOpacity style={styles.postAddInfo} onPress={() => navigation.navigate("Comments", {coordinates: item.coordinates})}>
                                         <EvilIcons name="comment" size={18} color="#BDBDBD" />
                                         <Text style={styles.commentsText}>0</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity style={styles.postAddInfo} onPress={() => navigation.navigate("Map")}>
+                                    <TouchableOpacity style={styles.postAddInfo} onPress={() => navigation.navigate("Map", {coordinates: item.coordinates})}>
                                         <EvilIcons name="location" size={18} color="#BDBDBD" />
                                         <Text style={styles.locationText}>{item.location}</Text>
                                     </TouchableOpacity>
